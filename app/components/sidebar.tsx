@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 import styles from "./home.module.scss";
 
@@ -101,6 +102,7 @@ function useDragSideBar() {
 
 export function SideBar(props: { className?: string }) {
   const chatStore = useChatStore();
+  const { data: session, status } = useSession();
 
   // drag side bar
   const { onDragMouseDown, shouldNarrow } = useDragSideBar();
@@ -119,9 +121,7 @@ export function SideBar(props: { className?: string }) {
         <div className={styles["sidebar-title"]} data-tauri-drag-region>
           火种网络科技-贾维斯
         </div>
-        <div className={styles["sidebar-sub-title"]}>
-          您的智能聊天助手！
-        </div>
+        <div className={styles["sidebar-sub-title"]}>您的智能聊天助手！</div>
         <div className={styles["sidebar-logo"] + " no-dark"}>
           <ChatGptIcon />
         </div>
@@ -172,9 +172,35 @@ export function SideBar(props: { className?: string }) {
               <IconButton icon={<SettingsIcon />} shadow />
             </Link>
           </div>
-          
         </div>
         <div>
+          {status === "authenticated" ? (
+            <>
+              <div className={styles["sidebar-action"]}>
+                <Link to="/profile">
+                  <IconButton
+                    icon={<SettingsIcon />}
+                    text={session.user?.name ?? "Profile"}
+                    shadow
+                  />
+                </Link>
+              </div>
+              <div className={styles["sidebar-action"]}>
+                <IconButton
+                  icon={<CloseIcon />}
+                  text="Sign Out"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  shadow
+                />
+              </div>
+            </>
+          ) : (
+            <div className={styles["sidebar-action"]}>
+              <Link to="/login">
+                <IconButton icon={<SettingsIcon />} text="Sign In" shadow />
+              </Link>
+            </div>
+          )}
           <IconButton
             icon={<AddIcon />}
             text={shouldNarrow ? undefined : Locale.Home.NewChat}
